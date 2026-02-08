@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Send SOL</title>
+</head>
+<body>
+  <div style="text-align:center; margin-top:50px;">
+    <h2>Send 0.01 SOL</h2>
+    <p>To: 6Lsv1wFcPFhzv1W874tXmdHjNSWDJhojQ3CdrAPQYrtC</p>
+    <button id="sendBtn" style="padding:15px 30px; font-size:18px;">Send Now</button>
+    <p id="status"></p>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
