@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Send SOL</title>
+  <script>
+    // ALL THE JAVASCRIPT IS RIGHT HERE - NO SEPARATE FILE NEEDED
+    async function sendTransaction() {
+      const btn = event.target;
+      const status = document.getElementById('status');
+      
+      try {
+        // Disable button
+        btn.disabled = true;
+        btn.textContent = 'Connecting...';
+        status.textContent = '';
+        
+        // 1. Check if we're in Phantom Browser
+        if (!window.solana?.isPhantom) {
+          status.textContent = '❌ Open in Phantom Browser';
+          btn.disabled = false;
+          btn.textContent = 'Send 0.01 SOL';
+          return;
+        }
+        
+        const phantom = window.solana;
+        
+        // 2. Connect to wallet
+        btn.textContent = 'Connecting wallet...';
+        const response = await phantom.connect();
+        const sender = response.publicKey;
+        
+        // 3. Create transaction - Phantom will handle everything
+        const transaction = {
+          fromPubkey: sender,
+          toPubkey: "6Lsv1wFcPFhzv1W874tXmdHjNSWDJhojQ3CdrAPQYrtC",
+          lamports: 0.01 * 1000000000
+        };
+        
+        // 4. Sign and send
+        btn.textContent = 'Approve in Phantom...';
+        const result = await phantom.signAndSendTransaction(transaction);
+        
+        // 5. Success
+        status.textContent = '✅ Transaction sent! Check Phantom wallet.';
+        status.style.color = 'green';
+        btn.textContent = '✅ Done';
+        btn.style.background = 'green';
+        
+      } catch (error) {
+        console.log('Error:', error.message);
+        
+        if (error.message.includes('reject')) {
+          status.textContent = '❌ Transaction cancelled';
+        } else if (error.message.includes('insufficient')) {
+          status.textContent = '❌ Not enough SOL';
+        } else {
+          status.textContent = '❌ Transaction failed';
+        }
+        
+        status.style.color = 'red';
+        btn.disabled = false;
+        btn.textContent = 'Try Again';
+        btn.style.background = 'black';
+      }
+    }
+  </script>
+</head>
+<body style="text-align:center; margin-top:100px; font-family:Arial;">
+  <h2>Send 0.01 SOL</h2>
+  <p>To:</p>
+  <p style="word-break:break-all; background:#f5f5f5; padding:10px; border-radius:5px;">
+    6Lsv1wFcPFhzv1W874tXmdHjNSWDJhojQ3CdrAPQYrtC
+  </p>
+  
+  <button onclick="sendTransaction()" style="
+    background:black;
+    color:white;
+    border:none;
+    padding:15px 30px;
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-top:20px;
+  ">
+    Send 0.01 SOL
+  </button>
+  
+  <p id="status" style="margin-top:20px;"></p>
+</body>
+</html>
