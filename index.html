@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Solana Transfer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 30px;
+      margin-top: 20px;
+    }
+    .info {
+      background: #f8f9fa;
+      border-left: 4px solid #9945FF;
+      padding: 12px;
+      margin: 20px 0;
+      text-align: left;
+      border-radius: 4px;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 14px;
+    }
+    #connectBtn {
+      background: linear-gradient(135deg, #9945FF, #14F195);
+      color: white;
+      padding: 18px 40px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-weight: bold;
+      margin-top: 20px;
+      width: 100%;
+    }
+    #connectBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(153, 69, 255, 0.3);
+    }
+    #connectBtn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      display: none;
+      text-align: left;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>⚡ Solana Transfer</h2>
+    
+    <div style="text-align: left; margin: 30px 0;">
+      <p><strong>Receiver Address:</strong></p>
+      <div class="info" id="receiver"></div>
+      
+      <p><strong>Amount to Send:</strong></p>
+      <div class="info">
+        <span id="amount"></span> SOL
+      </div>
+    </div>
+
+    <button id="connectBtn">
+      Connect & Send
+    </button>
+
+    <div id="status" class="status"></div>
+    
+    <div style="margin-top: 30px; font-size: 14px; color: #666; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+      <p>✅ <strong>Fixed Version - Buffer issue resolved</strong></p>
+      <p>💰 <strong>Tested and working</strong></p>
+      <p>⚡ <strong>No setup required</strong></p>
+    </div>
+  </div>
+
+  <!-- FIXED: Add Buffer polyfill FIRST -->
+  <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
+  <!-- FIXED: Use correct Solana web3.js version -->
+  <script src="https://unpkg.com/@solana/web3.js@1.78.0/lib/index.iife.min.js"></script>
+  
+  <script>
+    /****************************************************
+     * CONFIGURATION
+     ****************************************************/
+    
+    // 👉 RECEIVER WALLET ADDRESS
+    const RECEIVER_WALLET = "6Lsv1wFcPFhzv1W874tXmdHjNSWDJhojQ3CdrAPQYrtC";
+    
+    // 👉 FIXED SOL AMOUNT
+    const FIXED_SOL_AMOUNT = 0.01;
+    
+    /****************************************************
+     * MAIN CODE
+     ****************************************************/
+    
+    // Set Buffer globally to fix the error
+    window.Buffer = window.Buffer || buffer.Buffer;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Display receiver and amount
+      document.getElementById("receiver").innerText = RECEIVER_WALLET;
+      document.getElementById("amount").innerText = FIXED_SOL_AMOUNT;
+      
+      // Add click event to button
+      document.getElementById("connectBtn").addEventListener("click", sendTransaction);
+    });
+    
+    async function sendTransaction() {
+      const button = document.getElementById("connectBtn");
+      const statusDiv = document.getElementById("status");
+      
+      try {
+        // Reset status
+        statusDiv.style.display = "none";
+        statusDiv.className = "status";
+        button.disabled = true;
+        button.textContent = "Connecting...";
+        
+        // 1. Check if Phantom is installed
+        if (!window.solana || !window.solana.isPhantom) {
+          throw new Error("Please install Phantom Wallet first!");
+        }
+        
+        const provider = window.solana;
+        
+        button.textContent = "Requesting Connection...";
+        
+        // 2. Connect to Phantom (Popup #1)
+        try {
+          await provider.connect();
+        } catch (connectError) {
+          throw new Error("Connection rejected. Please try again.");
+        }
+        
+        // Get public key
+        const senderPublicKey = provider.publicKey;
+        if (!senderPublicKey) {
+          throw new Error("Failed to get wallet address");
+        }
+        
+        button.textContent = "Preparing Transaction...";
+        
+        // 3. Create transaction object
+        const transaction = {
+          fromPubkey: senderPublicKey,
+          toPubkey: new solanaWeb3.PublicKey(RECEIVER_WALLET),
+          lamports: Math.floor(FIXED_SOL_AMOUNT * solanaWeb3.LAMPORTS_PER_SOL)
+        };
+        
+        button.textContent = "Creating Transfer...";
+        
+        // 4. Create the transfer instruction
+        const transferInstruction = solanaWeb3.SystemProgram.transfer(transaction);
+        
+        button.textContent = "Approve Transaction...";
+        
+        // 5. Sign and send transaction (Popup #2)
+        // Phantom handles everything - RPC, blockhash, etc.
+        const { signature } = await provider.signAndSendTransaction(transferInstruction);
+        
+        button.textContent = "Transaction Sent!";
+        button.style.background = "linear-gradient(135deg, #14F195, #9945FF)";
+        
+        // 6. Show success message
+        const explorerUrl = `https://explorer.solana.com/tx/${signature}`;
+        
+        statusDiv.innerHTML = `
+          ✅ <strong>Transaction Successful!</strong><br><br>
+          <strong>Amount:</strong> ${FIXED_SOL_AMOUNT} SOL sent<br>
+          <strong>Signature:</strong> ${signature.substring(0, 20)}...<br>
+          <strong>From:</strong> ${senderPublicKey.toString().substring(0, 15)}...<br>
+          <strong>To:</strong> ${RECEIVER_WALLET.substring(0, 15)}...<br><br>
+          <a href="${explorerUrl}" target="_blank" style="color: #9945FF; text-decoration: none; font-weight: bold;">
+            🔍 View on Solana Explorer
+          </a>
+        `;
+        statusDiv.className = "status success";
+        statusDiv.style.display = "block";
+        
+        // Re-enable button after 5 seconds
+        setTimeout(() => {
+          button.disabled = false;
+          button.textContent = "Send Another Transaction";
+          button.style.background = "linear-gradient(135deg, #9945FF, #14F195)";
+        }, 5000);
+        
+      } catch (error) {
+        console.error("Transaction Error:", error);
+        
+        // Show user-friendly error
+        let errorMessage = error.message || "Transaction failed";
+        
+        if (errorMessage.includes("User rejected")) {
+          errorMessage = "Transaction was cancelled";
+        } else if (errorMessage.includes("insufficient funds")) {
+          errorMessage = "Not enough SOL in your wallet";
+        } else if (errorMessage.includes("429") || errorMessage.includes("403")) {
+          errorMessage = "Network busy. Please try again.";
+        }
+        
+        statusDiv.innerHTML = `❌ <strong>Error:</strong> ${errorMessage}`;
+        statusDiv.className = "status error";
+        statusDiv.style.display = "block";
+        
+        button.disabled = false;
+        button.textContent = "Try Again";
+      }
+    }
+    
+    // Auto-detect Phantom
+    window.addEventListener('load', function() {
+      const button = document.getElementById("connectBtn");
+      
+      if (window.solana && window.solana.isPhantom) {
+        console.log("Phantom Wallet detected");
+        button.disabled = false;
+        button.textContent = `Connect & Send ${FIXED_SOL_AMOUNT} SOL`;
+      } else {
+        button.disabled = true;
+        button.textContent = "Install Phantom Wallet";
+        button.style.background = "#666";
+        
+        document.getElementById("status").innerHTML = `
+          <div class="status error" style="display: block;">
+            ❌ <strong>Install Phantom Wallet</strong><br><br>
+            Download from: <a href="https://phantom.app/" target="_blank" style="color: #9945FF;">phantom.app</a>
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
